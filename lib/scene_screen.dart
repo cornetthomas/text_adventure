@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:swipedetector/swipedetector.dart';
+import 'package:text_adventure/enemy.dart';
 import 'package:text_adventure/fade_reveal.dart';
 import 'package:text_adventure/scene.dart';
 import 'package:text_adventure/world.dart';
@@ -14,15 +15,37 @@ class SceneScreen extends StatefulWidget {
 }
 
 class SceneScreenState extends State<SceneScreen> {
+  String _title;
+  String _storyline;
+
+  bool canNavigate = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _title = widget.scene.title;
+    _storyline = widget.scene.storyline;
+    if (widget.scene.hasCharacters()) {
+      for (Enemy e in widget.scene.characters) {
+        _storyline = "$_storyline. \n ${e.description}";
+      }
+    }
+
+    canNavigate = widget.scene.canNavigate();
+  }
+
   @override
   Widget build(BuildContext context) {
+    canNavigate = widget.scene.canNavigate();
+
     return SwipeDetector(
       child: Scaffold(
-        backgroundColor: World().getCurrentScene().color,
+        backgroundColor: widget.scene.color,
         body: SafeArea(
           child: Stack(
             children: [
-              World().hasSceneIn(Direction.west)
+              World().hasSceneIn(Direction.west) && canNavigate
                   ? Positioned(
                       child: GestureDetector(
                         onTap: () {
@@ -39,7 +62,7 @@ class SceneScreenState extends State<SceneScreen> {
                       top: MediaQuery.of(context).size.height * 0.5,
                     )
                   : Container(),
-              World().hasSceneIn(Direction.east)
+              World().hasSceneIn(Direction.east) && canNavigate
                   ? Positioned(
                       child: GestureDetector(
                         child: Padding(
@@ -56,7 +79,7 @@ class SceneScreenState extends State<SceneScreen> {
                       top: MediaQuery.of(context).size.height * 0.5,
                     )
                   : Container(),
-              World().hasSceneIn(Direction.north)
+              World().hasSceneIn(Direction.north) && canNavigate
                   ? Positioned(
                       child: GestureDetector(
                         child: Padding(
@@ -76,7 +99,7 @@ class SceneScreenState extends State<SceneScreen> {
                       width: 100.0,
                     )
                   : Container(),
-              World().hasSceneIn(Direction.south)
+              World().hasSceneIn(Direction.south) && canNavigate
                   ? Positioned(
                       child: GestureDetector(
                         child: Padding(
@@ -95,8 +118,24 @@ class SceneScreenState extends State<SceneScreen> {
                     )
                   : Container(),
               Center(
-                child: FadeReveal(widget.scene.title, widget.scene.storyline),
+                child: FadeReveal(_title, _storyline),
               ),
+              widget.scene.hasCharacters()
+                  ? Align(
+                      child: GestureDetector(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("HIT"),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _storyline = widget.scene.hitEnemies(30.0);
+                          });
+                        },
+                      ),
+                      alignment: Alignment.bottomCenter,
+                    )
+                  : Container(),
             ],
           ),
         ),

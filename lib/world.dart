@@ -1,3 +1,6 @@
+import 'package:text_adventure/character.dart';
+import 'package:text_adventure/enemy.dart';
+import 'package:text_adventure/player.dart';
 import 'package:text_adventure/position.dart';
 import 'package:text_adventure/scene.dart';
 import "package:flutter/material.dart";
@@ -6,12 +9,14 @@ enum Direction { north, south, east, west }
 
 class World {
   String name;
+  Player player;
 
   static final World _shared = World.shared();
 
   World.shared() {
     name = "Shared world";
     initWorld();
+    player = Player("ThePlayer", "This is the player");
   }
 
   factory World() {
@@ -29,7 +34,10 @@ class World {
         Scene("West", "Welcome to the West", Colors.deepOrange);
     _scenes[Position(2, 2).key] = Scene("Center", "Welcome to the Center");
     _scenes[Position(3, 2).key] = Scene("East", "Welcome to the East");
-    _scenes[Position(2, 3).key] = Scene("South", "Welcome to the South");
+
+    Scene aScene = Scene("South", "Welcome to the South");
+    aScene.characters.add(Enemy("Troll", "This is an angry Troll", 100.0));
+    _scenes[Position(2, 3).key] = aScene;
 
     _scenes[Position(5, 2).key] = Scene("Forest", "Welcome to the Forest");
     _scenes[Position(4, 2).key] = Scene("Beach", "Welcome to the Beach");
@@ -87,16 +95,11 @@ class World {
         break;
     }
 
-    print(_position.key);
-    print(_currentPosition.key);
-
     for (String key in _scenes.keys) {
       if (key == _position.key) {
         result = true;
       }
     }
-    print(result);
-    print("-----");
     return result;
   }
 }
